@@ -99,7 +99,8 @@
     </script>
   </head>
   <body ng-controller="MainController">
-    <div id="usersDiv">
+  	<h2> People who want to play games!</h2>
+    <div id="usersDiv" style="padding-bottom: 10px;">
          <div ng-repeat="user in users | recentUsers | orderBy:name"><em>{{ user.name }}</em>: <span style="color: {{ user.ready | readyColor }};">{{ user.ready | isReady }}</span></div>
     </div>
     <span class="js-name-input"> Enter your name here: <input type="text" ng-model="name" ng-keydown="updateUser($event)" placeholder="Name"> </span>
