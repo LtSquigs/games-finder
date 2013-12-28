@@ -1,0 +1,105 @@
+<html ng-app="gamesFinder">
+  <head>
+  	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src='https://ajax.googleapis.com/ajax/libs/angularjs/1.2.6/angular.min.js'></script>
+    <script src='https://cdn.firebase.com/v0/firebase.js'></script>
+    <script src='https://cdn.firebase.com/libs/angularfire/0.5.0/angularfire.min.js'></script>
+    <script>
+      var app = angular.module("gamesFinder", ["firebase"]);
+
+
+      app.filter('recentUsers', function() {
+      	return function(items) {
+	      	var filtered = [];
+
+	      	angular.forEach(items, function(item) {
+	      		if(item.lastSeen > (new Date().getTime() - (1000 * 60 * 15)))
+	      		{
+	      			filtered.push(item);
+	      		}
+	      	});
+
+	      	return filtered;
+      	};
+      });
+
+      app.filter('isReady', function() {
+      	return function(ready) {
+      		return ready ? 'Available' : 'Not Available'
+      	};
+      });
+
+      app.filter('readyColor', function() {
+      	return function(ready) {
+      		return ready ? 'green' : 'red'
+      	};
+      });
+
+      app.controller('MainController', ['$scope', '$firebase', function(scope, firebase) {
+        var usersRef = new Firebase("https://ltsquigs.firebaseio.com/gamesFinder/users/");
+        users = firebase(usersRef);
+        
+        scope.users = users;
+
+        var curUser = null;
+
+        scope.updateUser = function(e) {
+        	if(e.keyCode !== 13) return;
+
+        	var user = scope.users.$child(scope.name)
+
+        	user['lastSeen'] = new Date().getTime();
+        	user['name'] = scope.name;
+        	user['ready'] = user['ready'] ? user['ready'] : 1;
+
+        	user.$save();
+        	//scope.users.$save();
+
+        	scope.name = '';
+        	$('.js-name-input').hide();
+
+        	setInterval(function() { 
+        		user['lastSeen'] = new Date().getTime();
+        		user.$save();
+        	//	scope.users.$save();
+        	}, 5000);
+
+        	if(user['ready'])
+        	{
+        		$('.js-unavail-button').show();
+        	} else {
+        		$('.js-avail-button').show();
+        	}
+
+        	curUser = user;
+        };
+
+        scope.userAvailable = function(e) {
+        	curUser['ready'] = 1;
+        	curUser.$save();
+       // 	scope.users.$save();
+
+        	$('.js-avail-button').hide();
+        	$('.js-unavail-button').show();
+        };
+
+        scope.userUnavailable = function(e) {
+        	curUser['ready'] = 0;
+        	curUser.$save();
+//        	scope.users.$save();
+
+        	$('.js-avail-button').show();
+        	$('.js-unavail-button').hide();
+        };
+      }]);
+    </script>
+  </head>
+  <body ng-controller="MainController">
+    <div id="usersDiv">
+         <div ng-repeat="user in users | recentUsers | orderBy:name"><em>{{ user.name }}</em>: <span style="color: {{ user.ready | readyColor }};">{{ user.ready | isReady }}</span></div>
+    </div>
+    <span class="js-name-input"> Enter your name here: <input type="text" ng-model="name" ng-keydown="updateUser($event)" placeholder="Name"> </span>
+    <span class="js-avail-button" style="display: none;"> <button ng-click="userAvailable($event)">I'm available </button></span>
+    <span class="js-unavail-button" style="display: none;"> <button ng-click="userUnavailable($event)">I'm unavailable </button></span>
+  </body>
+</html>
