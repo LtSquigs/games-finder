@@ -13,7 +13,7 @@
 	      	var filtered = [];
 
 	      	angular.forEach(items, function(item) {
-	      		if(item.lastSeen > (new Date().getTime() - (1000 * 60 * 15)))
+	      		if(item.lastSeen > (new Date().getTime() - (1000 * 60 * 5)))
 	      		{
 	      			filtered.push(item);
 	      		}
@@ -73,6 +73,10 @@
 
         	curUser = user;
         };
+
+        setInterval(function() {
+        	scope.$apply();
+        }, 5000);
 
         scope.userAvailable = function(e) {
         	curUser['ready'] = 1;
