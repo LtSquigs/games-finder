@@ -37,7 +37,7 @@
       });
 
       app.controller('MainController', ['$scope', '$firebase', function(scope, firebase) {
-        var usersRef = new Firebase("https://ltsquigs.firebaseio.com/gamesFinder/users/");
+        var usersRef = new Firebase("https://ltsquigs-new.firebaseio.com/gamesFinder/users/");
         users = firebase(usersRef);
         
         scope.users = users;
